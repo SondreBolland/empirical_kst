@@ -4,13 +4,13 @@ import matplotlib.image as mpimg
 import tempfile
 import os
 
-def hasse(imp, items, dir_path = None, labels = None):
+def hasse(imp, n_items, dir_path = 'plots/', labels = None):
     """
     Hasse diagram of Surmise Relation
     Plots the Hasse diagram of surmise relation.
 
     :param imp: list of implications
-    :param items: number of items of the domain
+    :param n_items: number of items of the domain
     :param dir_path: path to the png directory
     :param labels: string labels for items
     :return: produces a plot and returns a list of the equally informative items
@@ -50,38 +50,33 @@ def hasse(imp, items, dir_path = None, labels = None):
                     implications.remove(k)
 
     for i in list(implications):
-        for j in range(items):
+        for j in range(n_items):
             if (i[0] != j) and (i[1] != j) and ((i[0], j) in implications) and ((i[1], j) in implications):
                 implications.remove((i[0], j))
 
     # bottom-up approach
     for i in range(len(implications)):
         implications[i] = (implications[i][1], implications[i][0])
-
-    graph = pydot.Dot(graph_type='graph')
     print(implications)
+    
+    #graph = pydot.Dot(graph_type='graph')
+    graph = pydot.Dot(graph_type='digraph', rankdir='BT')  # Makes diagram grow upward
     if labels:
         for i in implications:
-            graph.add_edge(pydot.Edge(str(labels[int(i[0])]), str(labels[int(i[1])])))
+            graph.add_edge(pydot.Edge(str(labels[int(i[0])]), str(labels[int(i[1])]), arrowhead='normal'))
     else:
         for i in implications:
-            graph.add_edge(pydot.Edge(i[0], i[1]))
+            graph.add_edge(pydot.Edge(i[0], i[1], arrowhead='normal'))
 
-    # standalone nodes
-    for i in range(items):
-        found = False
-        for implication in implications:
-            if i in implication:
-                found = True
-                break
+    # standalone nodes (with label support)
+    for i in range(n_items):
+        found = any(i in implication for implication in implications)
         if not found:
-            parallel = False
-            for key, value in parallel_items.items():
-                if i in value:
-                    parallel = True
-                    break
+            parallel = any(i in value for value in parallel_items.values())
             if not parallel:
-                graph.add_node(pydot.Node(i))
+                label = str(labels[i]) if labels else str(i)
+                graph.add_node(pydot.Node(label))
+
 
     fout = tempfile.NamedTemporaryFile(mode = 'w+t', dir = dir_path, suffix=".png", delete = False)
     graph.write(fout.name, format="png")
@@ -89,6 +84,6 @@ def hasse(imp, items, dir_path = None, labels = None):
     plt.axis('off')
     plt.imshow(img)
     plt.show()
-    os.remove(fout.name)
+    #os.remove(fout.name)
 
     return [list(set(value)) for key, value in parallel_items.items()]

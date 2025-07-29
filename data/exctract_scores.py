@@ -7,7 +7,7 @@ input_file = BASE_DIR + "results.csv"   # Replace with your actual file name
 output_file = BASE_DIR+ "scores.csv"
 
 # Load the CSV
-df = pd.read_csv(input_file, sep=';')  # Assumes semicolon-separated file
+df = pd.read_csv(input_file, sep=';')
 
 ### FILTER ###
 # Remove all rows where 'UniversityExperience' is 'No'
@@ -18,9 +18,6 @@ df = df.dropna(subset=['GraduateYear'])
 df['GraduateYear'] = pd.to_numeric(df['GraduateYear'], errors='coerce')
 specific_graduateyears = [2023, 2024] 
 df = df[(~df['GraduateYear'].isin(specific_graduateyears))]
-
-# Reduce number of rows to a managleable size
-df = df.sample(n=200, random_state=42) 
 
 print(f"The dataset has {len(df['Total'])} student submissions.")
 
