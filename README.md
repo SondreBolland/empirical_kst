@@ -1,7 +1,6 @@
 # Probabilistic Knowledge Structure Estimation
 
 This repository provides a pipeline for estimating a **probabilistic knowledge structure (PKS)** from binary student response data to programming tasks. 
-This is a fork of: https://github.com/milansegedinac/kst 
 
 It uses a combination of:
 
@@ -10,6 +9,8 @@ It uses a combination of:
 - **BLIM (Basic Local Independence Model)** to fit a probabilistic model of student knowledge.
 
 The code supports visualizing the knowledge structure and estimating slip/guess parameters and state probabilities.
+
+This is an edited fork of: https://github.com/milansegedinac/kst 
 
 ---
 
