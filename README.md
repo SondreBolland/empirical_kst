@@ -102,15 +102,4 @@ pip install -r requirements.txt
 The core logic relies on modules in [`learning_spaces/`](./learning_spaces/) — a custom package implementing IITA, state generation, BLIM, and Hasse diagram visualization.
 
 ---
----
-
-## 📜 Citation
-
-If you use this repository in research, please consider citing foundational works on:
-
-* Knowledge Space Theory (Doignon & Falmagne)
-* IITA (Sloane & Schrepp)
-* BLIM (Scheines & Falmagne)
-
----
 
