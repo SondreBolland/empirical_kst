@@ -1,73 +1,116 @@
-# Knowledge Space Theory
+# Probabilistic Knowledge Structure Estimation
 
-KST is an open source software library with Python implementations of basic Knowledge Space Theory algorithms.
+This repository provides a pipeline for estimating a **probabilistic knowledge structure (PKS)** from binary student response data to programming tasks. 
+This is a fork of: https://github.com/milansegedinac/kst 
 
-## Usage
+It uses a combination of:
 
-### Installation
-You can either clone the project or download a distribution [file](./dist/learning_spaces-0.2.0-py3-none-any.whl) and run command:
-`pip install /path-to-downloaded-file/learning_spaces-0.2.0-py3-none-any.whl`
+- **IITA (Inductive Item Tree Analysis)** to infer prerequisite implications between tasks,
+- **Closure-based generation** of feasible knowledge states,
+- **BLIM (Basic Local Independence Model)** to fit a probabilistic model of student knowledge.
 
-### Setup in Python
-KST requires installed Python 3.9. It is recommended to use the library in a separate virtual environment. A brief and practical introduction to virtual environments can be found on the following [link](https://docs.python-guide.org/dev/virtualenvs/).
-First, a virtual environment should be created.
+The code supports visualizing the knowledge structure and estimating slip/guess parameters and state probabilities.
+
+---
+
+## Features
+
+- Estimate implications between tasks using IITA
+- Construct feasible knowledge states from implications
+- Visualize the knowledge structure using a Hasse diagram
+- Fit a probabilistic model (BLIM) to student data
+
+---
+
+## Project Structure
+
 ```
-mkvirtualenv kst
+
+.
+├── data/
+│   └── scores.csv             # Input data file: binary student task performance (0/1)
+├── implications.txt           # Saved implication base (optional)
+├── main.py                    # Main analysis script
+├── README.md                  
+
+````
+
+---
+
+##  Theoretical Background
+
+1. **Step 1: Knowledge Structure Estimation**
+   - We use **IITA** to infer implications such as `q1 ⇒ q3`.
+   - From these, we construct the **closure system** — a set of feasible knowledge states.
+
+2. **Step 2: Probabilistic Model (BLIM)**
+   - Using the BLIM, we estimate:
+     - The probability of each knowledge state `P(K)`
+     - Slip (false negative) and guess (false positive) parameters per task
+   - The model is fit using the Minimum Discrepancy method.
+
+3. **Step 3: Student Diagnosis (planned)**
+   - Use the fitted model to infer the most likely knowledge state of a student
+   - Recommend tasks the student is ready to learn
+
+---
+
+## How to Run
+
+### 1. Prepare Input Data
+
+Your input should be a CSV file (e.g., `data/scores.csv`) with rows as students and columns as tasks. Entries must be binary (`0` = incorrect / not mastered, `1` = correct / mastered).
+
+```csv
+q1,q2,q3,q4
+1,0,1,1
+0,1,0,0
+...
+````
+
+### 2. Run the Analysis
+
+```bash
+python main.py --rows 100
 ```
-After creating a virtual environment, you should install the requirements.
-```
+
+**Options:**
+
+* `--rows`: Number of student responses to sample (default: 10)
+* `--load_implications`: Load implications from `implications.txt` instead of running IITA
+
+### 3. Output
+
+* Printed implications and error rate from IITA
+* `implications.txt`: Stores the implications found
+* Hasse diagram visualizing the knowledge structure
+* Printed summary of the BLIM model:
+
+  * State probabilities
+  * Slip/guess parameters
+
+---
+
+## Dependencies
+
+Install required libraries:
+
+```bash
 pip install -r requirements.txt
 ```
-After that, the library can be used.
-```python
->>> import pandas as pd
->>> from learning_spaces.kst import iita
->>> data_frame = pd.DataFrame({'a': [1, 0, 1], 'b': [0, 1, 0], 'c': [0, 1, 1]})
->>> response = iita(data_frame, v=1)
->>> print(response)
-{'diff': array([ 0.18518519,  0.16666667,  0.21296296]), 'implications': [(0, 1), (0, 2), (2, 0), (2, 1)], 'error.rate': 0.5, 'selection.set.index': 1, 'v': 1}
-```
 
-### Setup in a browser
-KST can be run in a browser environment, without need for Python server. We use [Pyodide](https://github.com/pyodide/pyodide) which brings the Python runtime to the browser via WebAssembly.
+The core logic relies on modules in [`learning_spaces/`](./learning_spaces/) — a custom package implementing IITA, state generation, BLIM, and Hasse diagram visualization.
 
-Full Example (open console to see the result):
-```html
-<!DOCTYPE html>
-  <html>
-  <head>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.18.1/full/pyodide.js"></script>
-  </head>
-  <body>
-    <script>
-      let pyodide;
+---
+---
 
-      async function init() {
-        pyodide = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.18.1/full/" });
-        await pyodide.loadPackage('micropip');
-        await pyodide.runPythonAsync(`
-          from micropip import install
-          await install('https://raw.githubusercontent.com/milansegedinac/kst/master/dist/learning_spaces-0.2.0-py3-none-any.whl')
-        `);
-      }
+## 📜 Citation
 
-      async function run() {
-        await pyodide.runPython(`
-          import pandas as pd
-          from learning_spaces.kst import iita
-          data_frame = pd.DataFrame({'a': [1, 0, 1], 'b': [0, 1, 0], 'c': [0, 1, 1]})
-          response = iita(data_frame, v=1)
-        `);
+If you use this repository in research, please consider citing foundational works on:
 
-        const response = pyodide.globals.get('response').toJs()
-        console.log(response)
-      }
+* Knowledge Space Theory (Doignon & Falmagne)
+* IITA (Sloane & Schrepp)
+* BLIM (Scheines & Falmagne)
 
-      (async () => {
-        await init()
-        await run()
-      })();
-    </script>
-  </body>
-</html>
-```
+---
+
